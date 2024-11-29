@@ -54,6 +54,7 @@ const styles = StyleSheet.create({
   },
   item: {
     alignItems: "center",
+    width: "50%",
     padding: 10
   },
   itemImage: {

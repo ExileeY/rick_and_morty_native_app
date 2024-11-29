@@ -1,22 +1,28 @@
 import {
+  useState,
+  useEffect
+} from "react";
+
+import {
   ScrollView,
   StyleSheet
 } from "react-native";
 
+import { getAllCharacters } from "@/utils/api";
+
 import ItemsList from "@/components/items/ItemsList";
 
 export default function Index() {
-  const defaultImage = require('@/assets/images/icon.png');
-  const items = [
-    { id: 1, name: "Item 1", image: defaultImage },
-    { id: 2, name: "Item 2", image: defaultImage },
-    { id: 3, name: "Item 3", image: defaultImage },
-    { id: 4, name: "Item 4", image: defaultImage },
-    { id: 5, name: "Item 5", image: defaultImage },
-    { id: 6, name: "Item 6", image: defaultImage },
-    { id: 7, name: "Item 7", image: defaultImage },
-    { id: 8, name: "Item 8", image: defaultImage }
-  ]
+  const [info, setInfo] = useState();
+  const [items, setItems] = useState([]);
+
+  useEffect(() => {
+    getAllCharacters()
+      .then(({ info, results }) => {
+        setInfo(info);
+        setItems(results);
+      });
+  }, []);
 
   return (
     <ScrollView>
