@@ -3,8 +3,6 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import { FlatList, StyleSheet } from "react-native";
 
-import { loadCharacters } from "@/utils/api";
-
 import type { Info, Character } from "@/types/CharacterCard";
 import CharacterCard from "@/components/CharacterCard";
 
@@ -12,22 +10,18 @@ export default function Index() {
   const [info, setInfo] = useState({} as Info);
   const [characters, setCharacters] = useState([] as Character[]);
 
-  useEffect(() => {
-    loadCharacters()
-      .then(({ info, results }) => {
-        setInfo(info);
-        setCharacters(results);
-      });
-  }, []);
+  const load = async (url?: string) => {
+    const { data } = url
+      ? await axios.get(url)
+      : await axios.get('https://rickandmortyapi.com/api/character');
 
-  const goToNext = () => {
-    if (info.next) {
-      axios.get(info.next).then(({ data }) => {
-        setInfo(data.info);
-        setCharacters([...characters].concat(data.results));
-      });
-    }
-  };
+    setInfo(data.info);
+    setCharacters(characters.concat(data.results));
+  }
+
+  useEffect(() => { load(); }, []);
+
+  
 
   return (
     <FlatList
@@ -35,7 +29,7 @@ export default function Index() {
       keyExtractor={item => item.id.toString()}
       numColumns={2}
       renderItem={({ item }) => <CharacterCard character={item} />}
-      onEndReached={goToNext}
+      onEndReached={() => info.next && load(info.next)}
     />
   );
 }
