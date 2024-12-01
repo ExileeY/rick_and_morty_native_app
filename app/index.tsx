@@ -1,63 +1,42 @@
-import {
-  useState,
-  useEffect
-} from "react";
+import axios from "axios";
 
-import {
-  ScrollView,
-  Pressable,
-  Text,
-  StyleSheet
-} from "react-native";
+import { useState, useEffect } from "react";
+import { FlatList, StyleSheet } from "react-native";
 
-import { getAllCharacters } from "@/utils/api";
+import { loadCharacters } from "@/utils/api";
 
-import ItemsList from "@/components/items/ItemsList";
+import type { Info, Character } from "@/types/CharacterCard";
+import CharacterCard from "@/components/CharacterCard";
 
 export default function Index() {
-  const [info, setInfo] = useState({ prev: null, next: null });
-  const [items, setItems] = useState([]);
+  const [info, setInfo] = useState({} as Info);
+  const [characters, setCharacters] = useState([] as Character[]);
 
   useEffect(() => {
-    getAllCharacters()
+    loadCharacters()
       .then(({ info, results }) => {
         setInfo(info);
-        setItems(results);
+        setCharacters(results);
       });
   }, []);
 
-  const goToPrev = () => {
-    info.prev
-      ? alert("Go to prev")
-      : alert("No prev");
-  };
-
   const goToNext = () => {
-    info.next
-      ? alert("Go to next")
-      : alert("No next");
+    if (info.next) {
+      axios.get(info.next).then(({ data }) => {
+        setInfo(data.info);
+        setCharacters([...characters].concat(data.results));
+      });
+    }
   };
 
   return (
-    <ScrollView>
-      <ItemsList items={items}/>
-
-      <Pressable
-        disabled={!info.prev}
-        style={{ alignItems: "center", justifyContent: "center" }} 
-        onPress={goToPrev}
-      >
-        <Text>Prev</Text>
-      </Pressable>
-
-      <Pressable
-        disabled={!info.next}
-        style={{ alignItems: "center", justifyContent: "center" }}
-        onPress={goToNext}
-      >
-        <Text>Next</Text>
-      </Pressable>
-    </ScrollView>
+    <FlatList
+      data={characters}
+      keyExtractor={item => item.id.toString()}
+      numColumns={2}
+      renderItem={({ item }) => <CharacterCard character={item} />}
+      onEndReached={goToNext}
+    />
   );
 }
 
